@@ -1,25 +1,17 @@
 #include <iostream>
 
 #define INIT_CAP 8
-#define LOAD_FACTOR 1
+#define LOAD_FACTOR 0.8
 
 struct Person {
   std::string name;
   short age;
   
   void print() {
-    std::cout << "Name: " << name << ". Age: " << age << '\n';
+    std::cout << name << " - " << age << " yo\n";
   }
 };
 
-template <typename T>
-struct Node {
-  const std::string key;
-  T val;
-  Node *next;
-
-  Node(const std::string &key, T val) : key(key), val(val), next(nullptr) {}
-};
 
 size_t hash(const std::string &str) {
   size_t total = 0;
@@ -30,23 +22,29 @@ size_t hash(const std::string &str) {
   return total; 
 }
 
-template <typename T>
 struct HashTable {
 private:
-  Node<T> **buckets;
+  struct Node {
+    const std::string key;
+    Person val;
+    Node *next;
+
+    Node(const std::string &key, const Person &val) : key(key), val(val), next(nullptr) {}
+  };
+
+  Node **buckets;
   size_t cap;
   size_t total;
-  double load_factor;
 
   void expand() {
-    Node<T> **old_buckets = buckets;
-    buckets = new Node<T> *[cap *= 2] { nullptr };
+    Node **old_buckets = buckets;
+    buckets = new Node *[cap *= 2] { nullptr };
     total = 0;
 
     for (size_t i = 0; i < cap / 2; i++) {
-      Node<T> *cur = old_buckets[i];
+      Node *cur = old_buckets[i];
       while (cur) {
-        Node<T> *next = cur->next;
+        Node *next = cur->next;
         cur->next = nullptr;
         insert_node(cur);     
         cur = next;
@@ -56,18 +54,17 @@ private:
     delete[] old_buckets;
   }
 
-  void insert_node(Node<T> *node) {
+  void insert_node(Node *node) {
     total++;
-    load_factor = (double) total / cap;
     size_t hashed_key = hash(node->key);
-    Node<T> **bucket = buckets + (hashed_key % cap);
+    Node **bucket = buckets + (hashed_key % cap);
 
     if (!*bucket) {
       *bucket = node;
       return;
     }
     
-    Node<T> *temp = *bucket;
+    Node *temp = *bucket;
     *bucket = node;
     (*bucket)->next = temp;
   }
@@ -76,15 +73,14 @@ public:
   HashTable(size_t init_cap = INIT_CAP) {
     cap = init_cap;
     total = 0;
-    load_factor = 0;
-    buckets = new Node<T> *[cap] { nullptr };
+    buckets = new Node *[cap] { nullptr };
   }
 
   ~HashTable() {
     for (size_t i = 0; i < cap; i++) {
-      Node<T> *cur = buckets[i];
+      Node *cur = buckets[i];
       while (cur) {
-        Node<T> *next = cur->next;
+        Node *next = cur->next;
         delete cur;
         cur = next;
       } 
@@ -97,14 +93,14 @@ public:
     return total;
   }
 
-  T *find(const std::string &key) {
+  Person *find(const std::string &key) {
     if (total == 0) return nullptr;
     size_t hashed_key = hash(key);
-    Node<T> **bucket = buckets + (hashed_key % cap);
+    Node **bucket = buckets + (hashed_key % cap);
 
     if (!*bucket)
       return nullptr;
-    Node<T> *cur = *bucket;
+    Node *cur = *bucket;
     while (cur) {
       if (cur->key == key)
         return &cur->val;
@@ -114,26 +110,26 @@ public:
     return nullptr;
   }
 
-  void insert(const std::string &key, T val) {
-    if (load_factor >= LOAD_FACTOR) expand();
-    T *existing_val = find(key);
+  void insert(const std::string &key, Person val) {
+    if ((double) total / cap >= LOAD_FACTOR) expand();
+    Person *existing_val = find(key);
     if (existing_val) {
       *existing_val = val;
       return;
     }
 
-    insert_node(new Node<T>(key, val));
+    insert_node(new Node(key, val));
   }
 
   short erase(const std::string &key) {
     total--;
     size_t hashed_key = hash(key);
-    Node<T> **bucket = buckets + (hashed_key % cap);
+    Node **bucket = buckets + (hashed_key % cap);
 
     if (!*bucket) return 0;
     
-    Node<T> *cur = *bucket;
-    Node<T> *prev = nullptr;
+    Node *cur = *bucket;
+    Node *prev = nullptr;
     while (cur) {
       if (cur->key == key) {
         if (!prev) {
@@ -145,6 +141,7 @@ public:
         delete cur;
         return 1;
       }
+      prev = cur;
       cur = cur->next;
     }
 
@@ -153,41 +150,29 @@ public:
 
   void print() {
     for (size_t i = 0; i < cap; i++) {
-      Node<T> *cur = buckets[i];
+      Node *cur = buckets[i];
       while (cur) {
-        std::cout << cur->key << ": " << cur->val << '\n';
+        std::cout << cur->key << ": ";
+        cur->val.print();
         cur = cur->next;
       }
     }
   }
-
 };
 
-template<> void HashTable<Person>::print() {
-  for (size_t i = 0; i < cap; i++) {
-    Node<Person> *cur = buckets[i];
-    while (cur) {
-      std::cout << cur->key << ": ";
-      cur->val.print();
-      cur = cur->next;
-    }
-  }
-}
 
 int main() {
-  HashTable<Person> table;
+  HashTable table;
+  Person person { "name", 1 };
+  std::string key = "g";
+  for (size_t i = 'a'; i < 'z'; i++) {
+    table.insert(key, person);
+    person.age++;
+    key.push_back(i);
+  }
   
-  table.insert("first", Person { "name", 18 });
-  table.insert("second", Person { "secname", 5 });
+  table.find("ga")->print();
 
-  HashTable<int> test_table;
-  test_table.insert("a", 5);
-  test_table.insert("b", 10);
-  test_table.insert("ghfjkdghfd", 44);
-  
-  test_table.print();
-
-  test_table.print();
   return 0;
 }
 
