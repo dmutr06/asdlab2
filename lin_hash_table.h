@@ -4,6 +4,7 @@
 #include "common.h"
 
 #define MAX_LOAD_FACTOR 0.5
+#define INIT_CAP_IDX 4
 
 struct Item {
 private:
@@ -11,14 +12,12 @@ private:
     Empty,
     Occupied,
     Removed,
-  };
-  State state;
+  } state;
 public:
   long long key;
   Data val;
 
-  Item() : state(State::Empty), key(0), val(Data()) {}
-  ~Item() {}
+  explicit Item() : state(State::Empty), key(0), val(Data()) {}
 
   void occupy(long long key, const Data &val) {
     this->key = key;
@@ -54,10 +53,6 @@ private:
     return key % primes[cap_idx];
   }
 
-  size_t step(long long key) {
-    return 1 + (key % primes[cap_idx - 1]);
-  }
-
   void resize() {
     Item *old_buckets = buckets;
     buckets = new Item[primes[++cap_idx]];
@@ -73,15 +68,14 @@ private:
   Item *find_item(long long key) {
     if (total == 0) return nullptr;
 
-    size_t hashed_key = hash(key);
+    const size_t hashed_key = hash(key);
     size_t alt_key = hashed_key;
     Item *item;
     size_t probe = 0;
     do {
       item = buckets + alt_key;
       if (item->empty()) return nullptr; 
-      if (item->removed() && item->key == key) return nullptr;  
-      if (item->key == key) return item;
+      if (item->key == key) return (item->removed() ? nullptr : item);  
 
       alt_key = (hashed_key + ++probe) % primes[cap_idx];
     } while (alt_key != hashed_key);
@@ -115,9 +109,9 @@ private:
   }
 
 public:
-  HashTable() {
+  explicit HashTable() {
     primes = get_primes(1000000, 2 / MAX_LOAD_FACTOR);
-    cap_idx = 2;
+    cap_idx = INIT_CAP_IDX;
     total = 0;
     buckets = new Item[primes[cap_idx]];
   }

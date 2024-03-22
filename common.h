@@ -5,36 +5,46 @@
 #include <cmath>
 #include <vector>
 
-struct Data {
+const std::string COMPANIES[] = { "There", "could", "be", "real", "companies" };
+
+struct Plane {
   std::string company;
   std::string number;
   double weight;
-  double max_speed;
-  void print() {
-    std::cout << number << '\n';
-  }
+  size_t max_speed;
 
-  Data() {
-    company = "none";
-    number = "43";
-    weight = 2.29;
-    max_speed = 0.5;
+  explicit Plane() {
+    company = COMPANIES[rand() % (sizeof(COMPANIES) / sizeof(std::string))];
+    number = gen_number(30); 
+    weight = 1500 + (double) (rand() % 10000) / (rand() % 99 + 1);
+    max_speed = 1000 + rand() % 500;
   }
+  
+private:
+  std::string gen_number(size_t len) {
+    std::string number;
+    for (size_t i = 0; i < len; i++) {
+      number.push_back('z' - rand() % ('z' - 'a'));
+    }
 
-  ~Data() {}
+    return number;
+  }
 };
+
+typedef Plane Data;
 
 inline long long generateRandLong() {
   long long num = 0;
   for (size_t i = 0; i < 10; i++) {
-    num += (rand() % 10) * std::pow(10, i);
+    num += (rand() % 10) * pow(10, i);
   }
 
   return num;
  
 }
 
-inline const std::vector<size_t> get_primes(size_t max_num, size_t min_diff) {
+
+inline std::vector<size_t> get_primes(size_t max_num, size_t min_diff) {
   std::vector<size_t> primes;
   bool *sieve = new bool[max_num + 1];
   sieve[0] = sieve[1] = 0;

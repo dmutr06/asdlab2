@@ -24,7 +24,6 @@ public:
   void push_node(HashNode *node);
   HashNode *pop_node();
   bool remove(long long key);
-  void print();
   bool empty();
 };
 

@@ -1,6 +1,6 @@
 #include <unordered_map>
 #include "common.h"
-#include "hash_table.h"
+#include "lin_hash_table.h"
 
 using namespace std;
 

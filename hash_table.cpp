@@ -1,10 +1,9 @@
 #include "hash_table.h"
 #include "common.h"
 
-
-HashTable::HashTable(size_t init_cap, float init_max_lf) : max_load_factor(init_max_lf) {
+HashTable::HashTable()  {
     cap_idx = 4;
-    primes = get_primes(1000000, (float) 1 / max_load_factor);
+    primes = get_primes(1000000, (float) 2 / MAX_LOAD_FACTOR);
     cap = primes[4];
     total = 0;
     buckets = new LinkedList[cap];
@@ -23,7 +22,7 @@ Data *HashTable::find(const long long key) {
 }
 
 void HashTable::insert(long long key, const Data &val) {
-  if ((float) total / cap >= max_load_factor) expand();
+  if ((float) total / cap >= MAX_LOAD_FACTOR) expand();
   Data *existing_val = find(key);
   if (existing_val) {
     *existing_val = val;
@@ -38,12 +37,6 @@ void HashTable::insert(long long key, const Data &val) {
 void HashTable::erase(long long key) {
   if (total == 0) return;
   if (buckets[hash(key)].remove(key)) total--;    
-}
-
-void HashTable::print() {
-    for (size_t i = 0; i < cap; i++) {
-      buckets[i].print();
-    }
 }
 
 void HashTable::expand() {
@@ -65,3 +58,4 @@ void HashTable::expand() {
 size_t HashTable::hash(size_t key) {
   return key % cap;
 }
+

@@ -80,12 +80,3 @@ HashNode *LinkedList::pop_node() {
   return temp;
 }
 
-void LinkedList::print() {
-  HashNode *cur = head;
-
-  while (cur) {
-    cur->val.print();
-    cur = cur->next;
-  }
-}
-

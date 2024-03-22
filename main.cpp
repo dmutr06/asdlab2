@@ -34,7 +34,6 @@
 
 int main() {
   srand(time(NULL));
-  // HashTable table;
 
   testHashTable();
   return 0;
