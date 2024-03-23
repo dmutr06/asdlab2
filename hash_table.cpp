@@ -1,5 +1,4 @@
 #include "hash_table.h"
-#include "common.h"
 
 HashTable::HashTable()  {
     cap_idx = 4;

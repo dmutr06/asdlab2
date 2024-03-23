@@ -110,7 +110,7 @@ private:
 
 public:
   explicit HashTable() {
-    primes = get_primes(1000000, 2 / MAX_LOAD_FACTOR);
+    primes = get_primes(1000000, 2.0 / MAX_LOAD_FACTOR);
     cap_idx = INIT_CAP_IDX;
     total = 0;
     buckets = new Item[primes[cap_idx]];

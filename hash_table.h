@@ -1,7 +1,6 @@
 #ifndef HASH_TABLE_H
 #define HASH_TABLE_H
 
-#include <cstddef>
 #include <vector>
 
 #include "common.h"
